@@ -1,0 +1,468 @@
+/* ==================== FOODVILLE CUSTOM STYLES ==================== */
+:root {
+    --primary: #FF6B35;
+    --primary-dark: #E55A2B;
+    --secondary: #F7C948;
+    --dark: #1A1A2E;
+    --dark-card: #16213E;
+    --accent: #E94560;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --light: #F5F5F5;
+    --white: #FFFFFF;
+    --gray: #9E9E9E;
+    --gray-light: #E0E0E0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Noto Sans Bengali', sans-serif;
+    background: #f8f9fa;
+    color: #333;
+    min-height: 100vh;
+}
+
+/* ==================== BOTTOM NAVIGATION ==================== */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0 8px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    z-index: 1000;
+    border-radius: 24px 24px 0 0;
+}
+
+.bottom-nav a {
+    text-decoration: none;
+    color: #999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.bottom-nav a.active {
+    color: var(--primary);
+}
+
+.bottom-nav a.active::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    width: 6px;
+    height: 6px;
+    background: var(--primary);
+    border-radius: 50%;
+}
+
+.bottom-nav .icon {
+    font-size: 22px;
+    margin-bottom: 4px;
+}
+
+.bottom-nav .badge {
+    position: absolute;
+    top: -8px;
+    right: -12px;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 12px;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* ==================== BUTTONS ==================== */
+.btn {
+    padding: 14px 28px;
+    border-radius: 16px;
+    border: none;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(255, 107, 53, 0.4);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+}
+
+.btn-danger {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 12px;
+}
+
+/* ==================== CARDS ==================== */
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+}
+
+.card-glass {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+/* ==================== INPUTS ==================== */
+.input-group {
+    margin-bottom: 16px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.input-field {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--gray-light);
+    border-radius: 14px;
+    font-size: 15px;
+    transition: all 0.3s;
+    background: white;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+/* ==================== HEADER ==================== */
+.app-header {
+    background: linear-gradient(135deg, var(--primary), #ff8c5a);
+    color: white;
+    padding: 20px;
+    border-radius: 0 0 30px 30px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* ==================== PRODUCT CARD ==================== */
+.product-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+}
+
+.product-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.product-card .badge-discount {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--accent);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ==================== MODAL ==================== */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.2s;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    animation: slideUp 0.3s;
+}
+
+/* ==================== SKELETON LOADER ==================== */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 12px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* ==================== TOAST ==================== */
+.toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--dark);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 14px;
+    z-index: 3000;
+    animation: slideUp 0.3s;
+}
+
+.toast.success {
+    background: var(--success);
+}
+
+.toast.error {
+    background: var(--accent);
+}
+
+/* ==================== ORDER STATUS ==================== */
+.status-timeline {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    padding: 20px 0;
+}
+
+.status-timeline::before {
+    content: '';
+    position: absolute;
+    top: 40px;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background: var(--gray-light);
+    z-index: 0;
+}
+
+.status-step {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.status-step .dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--gray-light);
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.status-step.active .dot {
+    background: var(--primary);
+    color: white;
+}
+
+.status-step.completed .dot {
+    background: var(--success);
+    color: white;
+}
+
+/* ==================== MOBILE CONTAINER ==================== */
+.mobile-container {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: #f8f9fa;
+    position: relative;
+}
+
+.main-content {
+    padding: 16px;
+    padding-bottom: 100px;
+}
+
+/* Page title */
+.page-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--dark);
+}
+
+/* ==================== IMAGE UPLOAD ==================== */
+.image-upload {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px dashed var(--gray-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    margin: 0 auto;
+    position: relative;
+}
+
+.image-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-upload .upload-icon {
+    font-size: 32px;
+    color: var(--gray);
+}
+
+/* ==================== TABS ==================== */
+.tabs {
+    display: flex;
+    gap: 4px;
+    background: #f0f0f0;
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 16px;
+}
+
+.tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    background: transparent;
+}
+
+.tab.active {
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* ==================== CHECKBOX / RADIO ==================== */
+.custom-radio, .custom-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: 2px solid var(--gray-light);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 8px;
+}
+
+.custom-radio.selected, .custom-checkbox.selected {
+    border-color: var(--primary);
+    background: rgba(255, 107, 53, 0.05);
+}
+
+/* ==================== EMPTY STATE ==================== */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-state .icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: #999;
+    font-size: 14px;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (min-width: 768px) {
+    .mobile-container {
+        border-left: 1px solid #eee;
+        border-right: 1px solid #eee;
+        box-shadow: 0 0 40px rgba(0,0,0,0.1);
+    }
+}

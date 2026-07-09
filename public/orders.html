@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - FoodVille</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="app-header flex items-center"><a href="/" class="text-white text-2xl mr-3">←</a><h1 class="text-lg font-bold">📦 Orders</h1></div>
+        <div class="main-content" id="ordersContent"></div>
+        <div class="bottom-nav">
+            <a href="/">🏠<span>Home</span></a>
+            <a href="/cart">🛒<span>Cart</span></a>
+            <a href="/orders" class="active">📦<span>Orders</span></a>
+            <a href="/profile">👤<span>Profile</span></a>
+        </div>
+    </div>
+    <script src="/js/config.js"></script>
+    <script>
+        if (!isLoggedIn()) window.location.href = '/login';
+
+        const statusMap = { pending:'⏳ Pending', confirmed:'✅ Confirmed', preparing:'👨‍🍳 Preparing', out_for_delivery:'🛵 Delivery', delivered:'✅ Delivered', cancelled:'❌ Cancelled' };
+        const colorMap = { pending:'yellow', confirmed:'blue', preparing:'purple', out_for_delivery:'orange', delivered:'green', cancelled:'red' };
+
+        async function loadOrders() {
+            try {
+                const data = await apiRequest(API.orders.myOrders);
+                const orders = data.orders || [];
+                if (!orders.length) return document.getElementById('ordersContent').innerHTML = '<div class="empty-state"><div class="icon">📦</div><h3>No orders</h3><a href="/" class="btn btn-primary btn-sm mt-4">Order Now</a></div>';
+                document.getElementById('ordersContent').innerHTML = orders.map(o => `
+                    <div class="card mb-3">
+                        <div class="flex justify-between"><span class="text-xs text-gray-400">#${o._id.slice(-6)}</span><span class="px-2 py-1 rounded-full text-xs bg-${colorMap[o.orderStatus]}-100 text-${colorMap[o.orderStatus]}-700">${statusMap[o.orderStatus]}</span></div>
+                        <p class="text-sm mt-1">${o.orderItems?.length} items</p>
+                        <p class="font-bold text-orange-500">₹${o.totalAmount}</p>
+                    </div>
+                `).join('');
+            } catch(e) {}
+        }
+
+        loadOrders();
+    </script>
+</body>
+</html>

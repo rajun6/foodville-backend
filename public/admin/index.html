@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - FoodVille</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .sidebar { transition: transform 0.3s; }
+        .sidebar.open { transform: translateX(0); }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 2000; top: 0; left: 0; height: 100%; width: 260px; }
+        }
+        .stat-card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .stat-value { font-size: 28px; font-weight: 700; }
+        .order-row:hover { background: #f8f9fa; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-500 to-red-500 p-4">
+        <div class="card w-full max-w-sm text-center animate-slide-up">
+            <div class="text-6xl mb-4">🔐</div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Admin Panel</h2>
+            <p class="text-gray-500 text-sm mb-6">সিক্রেট কী দিয়ে লগইন করুন</p>
+            
+            <form onsubmit="handleAdminLogin(event)">
+                <div class="input-group">
+                    <label>🔑 সিক্রেট কী</label>
+                    <input type="password" class="input-field text-center text-lg tracking-widest" 
+                           id="secretKey" placeholder="••••••••" required autofocus>
+                </div>
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    <span id="loginBtnText">🚀 লগইন</span>
+                    <span id="loginBtnLoader" class="hidden">⏳ লগইন হচ্ছে...</span>
+                </button>
+            </form>
+            <p class="text-xs text-gray-400 mt-4">Hint: <code class="bg-gray-100 px-2 py-1 rounded">admin123</code></p>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL (Hidden initially) -->
+    <div id="adminPanel" class="hidden">
+        <!-- Mobile Header -->
+        <div class="md:hidden bg-gray-900 text-white p-4 flex items-center justify-between">
+            <button onclick="toggleSidebar()" class="text-2xl">☰</button>
+            <h1 class="font-bold text-lg">🍕 FoodVille Admin</h1>
+            <button onclick="handleLogout()" class="text-sm text-red-400">Logout</button>
+        </div>
+
+        <div class="flex min-h-screen">
+            <!-- Sidebar -->
+            <div class="sidebar bg-gray-900 text-white w-64 p-5 space-y-6 md:relative" id="sidebar">
+                <div class="hidden md:block">
+                    <h1 class="text-xl font-bold mb-1">🍕 FoodVille</h1>
+                    <p class="text-gray-400 text-sm">Admin Panel</p>
+                </div>
+                
+                <nav class="space-y-2">
+                    <button onclick="showTab('dashboard')" class="tab-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 bg-orange-500" data-tab="dashboard">📊 Dashboard</button>
+                    <button onclick="showTab('products')" class="tab-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-gray-800" data-tab="products">🍕 Products</button>
+                    <button onclick="showTab('orders')" class="tab-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-gray-800" data-tab="orders">📦 Orders</button>
+                    <button onclick="showTab('users')" class="tab-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-gray-800" data-tab="users">👥 Users</button>
+                    <button onclick="showTab('categories')" class="tab-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-gray-800" data-tab="categories">📂 Categories</button>
+                </nav>
+
+                <div class="pt-4 border-t border-gray-700">
+                    <a href="/" class="text-gray-400 hover:text-white text-sm flex items-center gap-2">🏠 View Site</a>
+                    <button onclick="handleLogout()" class="text-red-400 hover:text-red-300 text-sm flex items-center gap-2 mt-2">🚪 Logout</button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1 p-5" id="mainContent">
+                <!-- Dashboard Tab -->
+                <div id="dashboardTab" class="tab-content">
+                    <h2 class="text-2xl font-bold mb-6">📊 Dashboard</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="statsGrid">
+                        <div class="stat-card"><div class="skeleton h-16"></div></div>
+                        <div class="stat-card"><div class="skeleton h-16"></div></div>
+                        <div class="stat-card"><div class="skeleton h-16"></div></div>
+                        <div class="stat-card"><div class="skeleton h-16"></div></div>
+                    </div>
+                    <div class="card"><h3 class="font-bold mb-4">📋 Recent Orders</h3><div id="recentOrders"><div class="skeleton h-32"></div></div></div>
+                </div>
+
+                <!-- Products Tab -->
+                <div id="productsTab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">🍕 Products</h2><button onclick="showAddProductModal()" class="btn btn-primary btn-sm">+ Add Product</button></div>
+                    <div class="card overflow-x-auto">
+                        <table class="w-full text-sm"><thead><tr class="border-b"><th class="p-3 text-left">Image</th><th class="p-3 text-left">Name</th><th class="p-3">Price</th><th class="p-3">Category</th><th class="p-3">Status</th><th class="p-3">Actions</th></tr></thead>
+                        <tbody id="productsTable"><tr><td colspan="6" class="p-6 text-center text-gray-400">Loading...</td></tr></tbody></table>
+                    </div>
+                </div>
+
+                <!-- Orders Tab -->
+                <div id="ordersTab" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold mb-6">📦 Orders</h2>
+                    <div class="flex gap-2 mb-4 flex-wrap" id="orderFilters">
+                        <button onclick="loadOrders('all')" class="px-4 py-2 rounded-full text-sm bg-orange-500 text-white">All</button>
+                        <button onclick="loadOrders('pending')" class="px-4 py-2 rounded-full text-sm bg-gray-200">Pending</button>
+                        <button onclick="loadOrders('confirmed')" class="px-4 py-2 rounded-full text-sm bg-gray-200">Confirmed</button>
+                        <button onclick="loadOrders('preparing')" class="px-4 py-2 rounded-full text-sm bg-gray-200">Preparing</button>
+                        <button onclick="loadOrders('out_for_delivery')" class="px-4 py-2 rounded-full text-sm bg-gray-200">Delivery</button>
+                        <button onclick="loadOrders('delivered')" class="px-4 py-2 rounded-full text-sm bg-gray-200">Delivered</button>
+                    </div>
+                    <div id="ordersList"><div class="skeleton h-64 rounded-2xl"></div></div>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="usersTab" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold mb-6">👥 Users</h2>
+                    <div class="card overflow-x-auto">
+                        <table class="w-full text-sm"><thead><tr class="border-b"><th class="p-3 text-left">Name</th><th class="p-3">Email</th><th class="p-3">Phone</th><th class="p-3">Status</th><th class="p-3">Actions</th></tr></thead>
+                        <tbody id="usersTable"><tr><td colspan="5" class="p-6 text-center text-gray-400">Loading...</td></tr></tbody></table>
+                    </div>
+                </div>
+
+                <!-- Categories Tab -->
+                <div id="categoriesTab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">📂 Categories</h2><button onclick="showAddCategoryModal()" class="btn btn-primary btn-sm">+ Add Category</button></div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="categoriesGrid"><div class="skeleton h-24 rounded-2xl"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modalContainer"></div>
+
+    <script src="/js/config.js"></script>
+    <script>
+        // ==================== ADMIN LOGIN ====================
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const secretKey = document.getElementById('secretKey').value.trim();
+            
+            if (!secretKey) {
+                showToast('❌ সিক্রেট কী দিন', 'error');
+                return;
+            }
+
+            document.getElementById('loginBtnText').classList.add('hidden');
+            document.getElementById('loginBtnLoader').classList.remove('hidden');
+            document.getElementById('loginBtn').disabled = true;
+
+            try {
+                const response = await fetch(API.auth.adminLogin, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ secretKey })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'ভুল সিক্রেট কী!');
+                }
+
+                setToken(data.token);
+                setUser(data.user);
+
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                
+                loadDashboard();
+                showToast('✅ স্বাগতম অ্যাডমিন!', 'success');
+
+            } catch (error) {
+                showToast('❌ ' + error.message, 'error');
+            } finally {
+                document.getElementById('loginBtnText').classList.remove('hidden');
+                document.getElementById('loginBtnLoader').classList.add('hidden');
+                document.getElementById('loginBtn').disabled = false;
+            }
+        }
+
+        // ==================== CHECK EXISTING LOGIN ====================
+        if (isLoggedIn() && isAdmin()) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            loadDashboard();
+        }
+
+        // ==================== SIDEBAR & TABS ====================
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById(tab + 'Tab').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('bg-orange-500'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('bg-orange-500');
+            document.getElementById('sidebar').classList.remove('open');
+
+            if (tab === 'dashboard') loadDashboard();
+            else if (tab === 'products') loadProducts();
+            else if (tab === 'orders') loadOrders('all');
+            else if (tab === 'users') loadUsers();
+            else if (tab === 'categories') loadCategories();
+        }
+
+        // ==================== DASHBOARD ====================
+        async function loadDashboard() {
+            try {
+                const data = await apiRequest(API.admin.dashboard);
+                const s = data.stats || {};
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="stat-card"><p class="text-gray-500 text-xs">Total Orders</p><p class="stat-value text-blue-500">${s.totalOrders||0}</p></div>
+                    <div class="stat-card"><p class="text-gray-500 text-xs">Today</p><p class="stat-value text-green-500">${s.todayOrders||0}</p></div>
+                    <div class="stat-card"><p class="text-gray-500 text-xs">Pending</p><p class="stat-value text-orange-500">${s.pendingOrders||0}</p></div>
+                    <div class="stat-card"><p class="text-gray-500 text-xs">Users</p><p class="stat-value text-purple-500">${s.totalUsers||0}</p></div>
+                `;
+                const orders = data.recentOrders || [];
+                document.getElementById('recentOrders').innerHTML = orders.length ? orders.map(o => `
+                    <div class="order-row flex justify-between items-center p-3 border-b">
+                        <div><p class="font-semibold">${o.user?.name||'Unknown'}</p><p class="text-xs text-gray-500">${o.orderItems?.length||0} items • ৳${o.totalAmount}</p></div>
+                        <span class="px-3 py-1 rounded-full text-xs bg-${o.orderStatus==='delivered'?'green':'yellow'}-100">${o.orderStatus}</span>
+                    </div>
+                `).join('') : '<p class="text-center text-gray-400 py-6">No orders yet</p>';
+            } catch(e) { showToast('Error: '+e.message, 'error'); }
+        }
+
+        // ==================== PRODUCTS ====================
+        async function loadProducts() {
+            try {
+                const data = await apiRequest(API.products.all + '?limit=100');
+                const products = data.products || [];
+                document.getElementById('productsTable').innerHTML = products.length ? products.map(p => `
+                    <tr class="border-b">
+                        <td class="p-3"><img src="${p.images?.[0]||'https://placehold.co/40/FF6B35/white?text=🍕'}" class="w-10 h-10 rounded-lg object-cover"></td>
+                        <td class="p-3 font-semibold">${p.name}</td>
+                        <td class="p-3 text-center">৳${p.price}</td>
+                        <td class="p-3 text-center">${p.category?.name||'-'}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-1 rounded-full text-xs ${p.isAvailable?'bg-green-100 text-green-600':'bg-red-100 text-red-600'}">${p.isAvailable?'Active':'Out'}</span></td>
+                        <td class="p-3 text-center">
+                            <button onclick="editProduct('${p._id}')" class="text-blue-500 mr-2">✏️</button>
+                            <button onclick="deleteProduct('${p._id}')" class="text-red-500">🗑️</button>
+                        </td>
+                    </tr>
+                `).join('') : '<tr><td colspan="6" class="p-6 text-center">No products</td></tr>';
+            } catch(e) {}
+        }
+
+        async function showAddProductModal(id = null) {
+            let product = null, categories = [];
+            try {
+                const cd = await apiRequest(API.products.categories);
+                categories = cd.categories || [];
+                if (id) { const pd = await apiRequest(API.products.single(id)); product = pd.product; }
+            } catch(e) {}
+
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:500px;max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
+                    <h3 class="font-bold text-lg mb-4">${id?'✏️ Edit':'➕ Add'} Product</h3>
+                    <form onsubmit="saveProduct(event, '${id||''}')">
+                        <div class="input-group"><label>Name *</label><input type="text" class="input-field" id="pName" value="${product?.name||''}" required></div>
+                        <div class="input-group"><label>Description</label><textarea class="input-field" id="pDesc" rows="2">${product?.description||''}</textarea></div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group"><label>Price *</label><input type="number" class="input-field" id="pPrice" value="${product?.price||''}" required></div>
+                            <div class="input-group"><label>Discount</label><input type="number" class="input-field" id="pDiscount" value="${product?.discountPrice||''}"></div>
+                        </div>
+                        <div class="input-group"><label>Category *</label><select class="input-field" id="pCategory" required><option value="">Select</option>${categories.map(c=>`<option value="${c._id}" ${product?.category?._id===c._id?'selected':''}>${c.icon} ${c.name}</option>`).join('')}</select></div>
+                        <div class="input-group"><label>Image URL</label><input type="text" class="input-field" id="pImage" value="${product?.images?.[0]||''}"></div>
+                        <label class="flex items-center gap-2 my-3"><input type="checkbox" id="pAvail" ${product?.isAvailable!==false?'checked':''}> Available</label>
+                        <label class="flex items-center gap-2 mb-3"><input type="checkbox" id="pPop" ${product?.isPopular?'checked':''}> Popular</label>
+                        <button type="submit" class="btn btn-primary">💾 ${id?'Update':'Create'}</button>
+                        <button type="button" onclick="this.closest('.modal-overlay').remove()" class="btn btn-outline btn-sm mt-2">Cancel</button>
+                    </form>
+                </div>
+            `;
+            document.getElementById('modalContainer').appendChild(modal);
+        }
+
+        async function saveProduct(e, pid) {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('pName').value,
+                description: document.getElementById('pDesc').value,
+                price: Number(document.getElementById('pPrice').value),
+                discountPrice: Number(document.getElementById('pDiscount').value) || undefined,
+                category: document.getElementById('pCategory').value,
+                images: [document.getElementById('pImage').value || 'https://placehold.co/400/FF6B35/white?text=🍕'],
+                isAvailable: document.getElementById('pAvail').checked,
+                isPopular: document.getElementById('pPop').checked
+            };
+            try {
+                if (pid) await apiRequest(API.admin.updateProduct(pid), { method: 'PUT', body: JSON.stringify(data) });
+                else await apiRequest(API.admin.createProduct, { method: 'POST', body: JSON.stringify(data) });
+                document.querySelector('.modal-overlay').remove();
+                loadProducts();
+                showToast('✅ Saved!', 'success');
+            } catch(e) { showToast('❌ '+e.message, 'error'); }
+        }
+
+        function editProduct(id) { showAddProductModal(id); }
+
+        async function deleteProduct(id) {
+            if (!confirm('Delete?')) return;
+            try { await apiRequest(API.admin.deleteProduct(id), { method: 'DELETE' }); loadProducts(); showToast('✅ Deleted', 'success'); }
+            catch(e) { showToast('❌ '+e.message, 'error'); }
+        }
+
+        // ==================== ORDERS ====================
+        async function loadOrders(status = 'all') {
+            document.querySelectorAll('#orderFilters button').forEach(b => { b.classList.remove('bg-orange-500','text-white'); b.classList.add('bg-gray-200'); });
+            event?.target?.classList.add('bg-orange-500', 'text-white');
+            try {
+                const url = status === 'all' ? API.admin.orders : `${API.admin.orders}?status=${status}`;
+                const data = await apiRequest(url);
+                const orders = data.orders || [];
+                document.getElementById('ordersList').innerHTML = orders.length ? orders.map(o => `
+                    <div class="card mb-3">
+                        <div class="flex justify-between">
+                            <div><p class="font-semibold">${o.user?.name||'Unknown'} #${o._id?.slice(-6)}</p><p class="text-xs text-gray-500">${o.orderItems?.length} items • ৳${o.totalAmount}</p></div>
+                            <select onchange="updateOrderStatus('${o._id}', this.value)" class="border rounded-lg px-3 py-1 text-sm">
+                                ${['pending','confirmed','preparing','out_for_delivery','delivered','cancelled'].map(s => `<option ${o.orderStatus===s?'selected':''}>${s}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `).join('') : '<p class="text-center text-gray-400 py-6">No orders</p>';
+            } catch(e) {}
+        }
+
+        async function updateOrderStatus(id, status) {
+            try { await apiRequest(API.admin.updateOrder(id), { method: 'PUT', body: JSON.stringify({ status }) }); showToast('✅ Updated!', 'success'); }
+            catch(e) { showToast('❌ '+e.message, 'error'); }
+        }
+
+        // ==================== USERS ====================
+        async function loadUsers() {
+            try {
+                const data = await apiRequest(API.admin.users);
+                document.getElementById('usersTable').innerHTML = (data.users||[]).map(u => `
+                    <tr class="border-b"><td class="p-3 font-semibold">${u.name}</td><td class="p-3 text-sm">${u.email}</td><td class="p-3">${u.phone}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-full text-xs ${u.isActive?'bg-green-100 text-green-600':'bg-red-100 text-red-600'}">${u.isActive?'Active':'Blocked'}</span></td>
+                    <td class="p-3"><button onclick="toggleUser('${u._id}')" class="${u.isActive?'text-red-500':'text-green-500'} text-sm">${u.isActive?'🚫 Block':'✅ Activate'}</button></td></tr>
+                `).join('') || '<tr><td colspan="5" class="p-6 text-center">No users</td></tr>';
+            } catch(e) {}
+        }
+
+        async function toggleUser(id) {
+            try { const d = await apiRequest(`${API.admin.users}/${id}/toggle-active`, { method: 'PUT' }); showToast('✅ Done!', 'success'); loadUsers(); }
+            catch(e) { showToast('❌ '+e.message, 'error'); }
+        }
+
+        // ==================== CATEGORIES ====================
+        async function loadCategories() {
+            try {
+                const data = await apiRequest(API.products.categories);
+                document.getElementById('categoriesGrid').innerHTML = (data.categories||[]).map(c => `
+                    <div class="stat-card text-center"><p class="text-3xl">${c.icon}</p><p class="font-semibold">${c.name}</p><p class="text-xs text-gray-500">${c.slug}</p></div>
+                `).join('');
+            } catch(e) {}
+        }
+
+        async function showAddCategoryModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+            modal.innerHTML = `
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <h3 class="font-bold text-lg mb-4">➕ Add Category</h3>
+                    <form onsubmit="saveCategory(event)">
+                        <div class="input-group"><label>Name *</label><input type="text" class="input-field" id="catName" required></div>
+                        <div class="input-group"><label>Icon</label><input type="text" class="input-field" id="catIcon" placeholder="🍕"></div>
+                        <div class="input-group"><label>Slug</label><input type="text" class="input-field" id="catSlug" placeholder="pizza"></div>
+                        <button type="submit" class="btn btn-primary">💾 Create</button>
+                        <button type="button" onclick="this.closest('.modal-overlay').remove()" class="btn btn-outline btn-sm mt-2">Cancel</button>
+                    </form>
+                </div>
+            `;
+            document.getElementById('modalContainer').appendChild(modal);
+        }
+
+        async function saveCategory(e) {
+            e.preventDefault();
+            try {
+                await apiRequest(API.admin.createCategory, { method: 'POST', body: JSON.stringify({
+                    name: document.getElementById('catName').value,
+                    icon: document.getElementById('catIcon').value || '🍽️',
+                    slug: document.getElementById('catSlug').value || undefined
+                })});
+                document.querySelector('.modal-overlay').remove();
+                loadCategories();
+                showToast('✅ Created!', 'success');
+            } catch(e) { showToast('❌ '+e.message, 'error'); }
+        }
+
+        // ==================== HELPERS ====================
+        function handleLogout() {
+            removeToken();
+            location.reload();
+        }
+
+        function showToast(msg, type='') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 3000);
+        }
+    </script>
+</body>
+</html>

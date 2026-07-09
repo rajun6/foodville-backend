@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - FoodVille</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="app-header flex items-center"><a href="/" class="text-white text-2xl mr-3">←</a><h1 class="text-lg font-bold">🛒 Cart</h1></div>
+        <div class="main-content" id="cartContent"></div>
+        <div class="bottom-nav">
+            <a href="/">🏠<span>Home</span></a>
+            <a href="/cart" class="active">🛒<span>Cart</span></a>
+            <a href="/orders">📦<span>Orders</span></a>
+            <a href="/profile">👤<span>Profile</span></a>
+        </div>
+    </div>
+    <script src="/js/config.js"></script>
+    <script>
+        if (!isLoggedIn()) window.location.href = '/login';
+
+        async function loadCart() {
+            try {
+                const data = await apiRequest(API.cart.get);
+                const cart = data.cart;
+                if (!cart.items?.length) {
+                    document.getElementById('cartContent').innerHTML = '<div class="empty-state"><div class="icon">🛒</div><h3>Cart is empty</h3><a href="/" class="btn btn-primary btn-sm mt-4">Browse Menu</a></div>';
+                    return;
+                }
+                document.getElementById('cartContent').innerHTML = `
+                    ${cart.items.map(item => `
+                        <div class="card flex gap-3">
+                            <img src="${item.product?.images?.[0]||'https://placehold.co/100/FF6B35/white?text=🍕'}" class="w-16 h-16 rounded-xl object-cover">
+                            <div class="flex-1"><h4 class="font-semibold text-sm">${item.product?.name||''}</h4><p class="text-orange-500 font-bold">₹${item.price} × ${item.quantity}</p></div>
+                            <button onclick="removeItem('${item._id}')" class="text-red-400 text-xl">🗑️</button>
+                        </div>
+                    `).join('')}
+                    <div class="card mt-3">
+                        <div class="flex justify-between"><span>Subtotal</span><span>₹${cart.totalPrice}</span></div>
+                        <div class="flex justify-between"><span>Delivery</span><span>₹40</span></div>
+                        <hr class="my-2"><div class="flex justify-between font-bold"><span>Total</span><span class="text-orange-500">₹${cart.totalPrice+40}</span></div>
+                    </div>
+                    <button onclick="placeOrder()" class="btn btn-primary mt-3">📦 Place Order - ₹${cart.totalPrice+40}</button>
+                `;
+            } catch(e) {}
+        }
+
+        async function removeItem(id) {
+            try { await apiRequest(API.cart.remove(id), { method: 'DELETE' }); loadCart(); showToast('✅ Removed', 'success'); }
+            catch(e) { showToast('❌ '+e.message, 'error'); }
+        }
+
+        async function placeOrder() {
+            try {
+                const user = getUser();
+                const addr = user.addresses?.[0];
+                if (!addr) { showToast('Add address in profile first!', 'error'); return; }
+                await apiRequest(API.orders.place, { method: 'POST', body: JSON.stringify({
+                    shippingAddress: { street: addr.street, city: addr.city, area: addr.area, phone: addr.phone || user.phone },
+                    paymentMethod: 'cash_on_delivery'
+                })});
+                showToast('🎉 Order placed!', 'success');
+                setTimeout(() => window.location.href = '/orders', 1000);
+            } catch(e) { showToast('❌ '+e.message, 'error'); }
+        }
+
+        loadCart();
+    </script>
+</body>
+</html>

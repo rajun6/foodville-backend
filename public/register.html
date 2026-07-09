@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - FoodVille</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gradient-to-br from-orange-50 to-yellow-50 min-h-screen">
+    <div class="mobile-container">
+        <div class="app-header text-center"><h1 class="text-2xl font-bold">🍕 FoodVille</h1><p class="text-sm opacity-90">Create Account</p></div>
+        <div class="main-content">
+            <div class="card">
+                <form onsubmit="handleRegister(event)">
+                    <div class="input-group"><label>👤 Full Name *</label><input type="text" class="input-field" id="rname" required></div>
+                    <div class="input-group"><label>📧 Email *</label><input type="email" class="input-field" id="remail" required></div>
+                    <div class="input-group"><label>📱 Phone * (10 digits, 6-9 start)</label><input type="text" class="input-field" id="rphone" maxlength="10" required></div>
+                    <div class="input-group"><label>🔒 Password * (min 6)</label><input type="password" class="input-field" id="rpass" minlength="6" required></div>
+                    <button type="submit" class="btn btn-primary mt-3">✅ Register</button>
+                </form>
+                <p class="text-center text-sm mt-4">Already have account? <a href="/login" class="text-orange-500 font-semibold">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script>
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('rname').value;
+            const email = document.getElementById('remail').value;
+            const phone = document.getElementById('rphone').value;
+            const password = document.getElementById('rpass').value;
+            
+            if (!/^[6-9]\d{9}$/.test(phone)) return showToast('❌ Valid 10-digit phone starting with 6-9', 'error');
+            if (password.length < 6) return showToast('❌ Password min 6 characters', 'error');
+
+            try {
+                const data = await apiRequest(API.auth.register, { method: 'POST', body: JSON.stringify({ name, email, phone, password }) });
+                setToken(data.token); setUser(data.user);
+                showToast('✅ Registered!', 'success');
+                setTimeout(() => window.location.href = '/', 500);
+            } catch(e) { showToast('❌ ' + e.message, 'error'); }
+        }
+    </script>
+</body>
+</html>
